@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --eco-primary: #16a34a;
+  --eco-secondary: #22c55e;
+  --eco-bg: #f0fdf4;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Algolia Chat Widget Overrides */
+.ais-Chat {
+  --ais-chat-primary: #16a34a !important;
+}
+
+.ais-Chat-container {
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #dcfce7 !important;
+  max-height: 600px !important;
+}
+
+.ais-Chat-header {
+  background: linear-gradient(135deg, #166534 0%, #16a34a 100%) !important;
+  border-radius: 16px 16px 0 0 !important;
+  padding: 16px 20px !important;
+}
+
+.ais-Chat-toggleButton {
+  background: linear-gradient(135deg, #166534 0%, #22c55e 100%) !important;
+  border-radius: 50% !important;
+  width: 60px !important;
+  height: 60px !important;
+  box-shadow: 0 4px 20px rgba(22, 163, 74, 0.4) !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+}
+
+.ais-Chat-toggleButton:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 30px rgba(22, 163, 74, 0.6) !important;
+}
+
+.ais-Chat-message--assistant {
+  background: #f0fdf4 !important;
+  border: 1px solid #dcfce7 !important;
+  border-radius: 12px !important;
+}
+
+.ais-Chat-message--user {
+  background: linear-gradient(135deg, #166534 0%, #16a34a 100%) !important;
+  color: white !important;
+  border-radius: 12px !important;
+}
+
+.ais-Chat-prompt textarea {
+  border: 2px solid #dcfce7 !important;
+  border-radius: 12px !important;
+}
+
+.ais-Chat-prompt textarea:focus {
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
+}
+
+/* Carbon meter animation */
+@keyframes fillMeter {
+  from { width: 0%; }
+  to { width: var(--fill-width); }
+}
+
+.carbon-fill {
+  animation: fillMeter 1s ease-out forwards;
+}
+
+/* Fade in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.fade-in-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.fade-in-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.fade-in-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
+.fade-in-up-delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
