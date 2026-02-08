@@ -325,11 +325,11 @@ function buildAssistantResponse(query: string, destinations: Destination[], erro
 
 // --- Suggested Queries ---
 const SUGGESTED_QUERIES = [
-  "Eco-friendly beach destinations in Costa Rica",
+  "Eco-friendly beach destinations in Italy",
   "Lowest carbon travel through Europe",
-  "Family-friendly nature trip under $100/night",
-  "Mountain retreats with solar power",
-  "Train vs flight emissions for Norway",
+  "Family-friendly nature trip in Jamaica",
+  "Mountain retreats with solar power in Switzerland",
+  "Train vs flight emissions for France",
 ]
 
 // --- Main Page ---
@@ -337,23 +337,73 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Welcome to EcoVoyage AI! 🌍🌿\n\nI'm your sustainable travel companion. I help you discover eco-friendly destinations while minimizing your carbon footprint.\n\nTell me about your dream trip — where you want to go, what activities you enjoy, or what matters most to you about sustainable travel.\n\nTry: \"eco-lodges in Costa Rica\" or \"train travel through Norway\"",
+      content: "Welcome to EcoVoyage AI! 🌍🌿\n\nI'm your sustainable travel companion. I help you discover eco-friendly destinations while minimizing your carbon footprint.\n\nTell me about your dream trip — where you want to go, what activities you enjoy, or what matters most to you about sustainable travel.\n\nTry: \"eco-lodges in Italy\" or \"beach destinations in Jamaica\"",
     },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [suggestions, setSuggestions] = useState<Array<{ name: string; country: string; region: string }>>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Autocomplete: fetch suggestions as user types
+  const fetchSuggestions = (query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (query.length < 2) {
+      setSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const { results } = await searchClient.search<Destination>({
+          requests: [{
+            indexName: ALGOLIA_INDEX,
+            query,
+            hitsPerPage: 5,
+            attributesToRetrieve: ['name', 'country', 'region'],
+          }],
+        })
+        const firstResult = results[0]
+        if (firstResult && 'hits' in firstResult) {
+          const hits = firstResult.hits as Destination[]
+          setSuggestions(hits.map(h => ({
+            name: safeString(h.name, ''),
+            country: safeString(h.country, ''),
+            region: safeString(h.region, ''),
+          })))
+          setShowSuggestions(hits.length > 0)
+        }
+      } catch {
+        setSuggestions([])
+      }
+    }, 200)
+  }
+
+  const handleInputChange = (value: string) => {
+    setInput(value)
+    fetchSuggestions(value)
+  }
+
+  const handleSuggestionClick = (suggestion: { name: string; country: string }) => {
+    setShowSuggestions(false)
+    setSuggestions([])
+    handleSend(`${suggestion.name} in ${suggestion.country}`)
+  }
 
   const handleSend = async (overrideQuery?: string) => {
     const query = overrideQuery || input.trim()
     if (!query || loading) return
 
     setInput('')
+    setShowSuggestions(false)
+    setSuggestions([])
     setMessages((prev) => [...prev, { role: 'user', content: query }])
     setLoading(true)
 
@@ -406,8 +456,8 @@ export default function Home() {
           </a>
 
           <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto fade-in-up fade-in-up-delay-3">
-            <div><div className="text-3xl font-bold">750+</div><div className="text-eco-300 text-sm">Eco Destinations</div></div>
-            <div><div className="text-3xl font-bold">20</div><div className="text-eco-300 text-sm">Countries</div></div>
+            <div><div className="text-3xl font-bold">1000+</div><div className="text-eco-300 text-sm">Eco Destinations</div></div>
+            <div><div className="text-3xl font-bold">45</div><div className="text-eco-300 text-sm">Countries</div></div>
             <div><div className="text-3xl font-bold">8</div><div className="text-eco-300 text-sm">Transport Modes</div></div>
           </div>
         </div>
@@ -548,20 +598,57 @@ export default function Home() {
               </div>
             )}
 
-            {/* Input */}
+            {/* Input with Autocomplete */}
             <div className="p-4 bg-white border-t border-eco-100">
-              <div className="flex gap-3">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="Ask about eco-friendly destinations..."
-                  className="flex-1 px-4 py-3 rounded-xl border-2 border-eco-200 focus:border-eco-500 focus:ring-2 focus:ring-eco-100 outline-none text-sm transition"
-                  disabled={loading}
-                  aria-label="Type your travel question"
-                />
+              <div className="flex gap-3 relative">
+                <div className="flex-1 relative">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={input}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setShowSuggestions(false)
+                        handleSend()
+                      }
+                      if (e.key === 'Escape') setShowSuggestions(false)
+                    }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                    placeholder="Ask about eco-friendly destinations..."
+                    className="w-full px-4 py-3 rounded-xl border-2 border-eco-200 focus:border-eco-500 focus:ring-2 focus:ring-eco-100 outline-none text-sm transition"
+                    disabled={loading}
+                    aria-label="Type your travel question"
+                    aria-expanded={showSuggestions}
+                    aria-haspopup="listbox"
+                    autoComplete="off"
+                  />
+                  {/* Autocomplete Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul
+                      className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-eco-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                      role="listbox"
+                      aria-label="Destination suggestions"
+                    >
+                      {suggestions.map((s, i) => (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => handleSuggestionClick(s)}
+                            className="w-full text-left px-4 py-2.5 hover:bg-eco-50 transition text-sm flex items-center gap-2"
+                            role="option"
+                          >
+                            <span className="text-eco-500">🌿</span>
+                            <span className="font-medium text-gray-800">{s.name}</span>
+                            <span className="text-gray-400 text-xs">— {s.region}, {s.country}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
                 <button
                   onClick={() => handleSend()}
                   disabled={loading || !input.trim()}
@@ -572,7 +659,7 @@ export default function Home() {
                 </button>
               </div>
               <p className="text-xs text-gray-400 mt-2 text-center">
-                Powered by Algolia — results retrieved in &lt;50ms
+                Powered by Algolia — start typing for instant suggestions
               </p>
             </div>
           </div>
@@ -590,8 +677,8 @@ export default function Home() {
             Built for the <a href="https://dev.to/challenges/algolia-2026-01-07" className="text-eco-400 hover:text-white underline">Algolia Agent Studio Challenge</a>
           </p>
           <div className="flex justify-center gap-6 text-xs">
-            <span>750+ Eco Destinations</span><span>·</span>
-            <span>20 Countries</span><span>·</span>
+            <span>1000+ Eco Destinations</span><span>·</span>
+            <span>45 Countries</span><span>·</span>
             <span>8 Transport Modes</span><span>·</span>
             <span>Real Carbon Data</span>
           </div>

@@ -14,6 +14,7 @@ INDEX_NAME = "ecovoyage_destinations"
 # --- Data pools ---
 
 COUNTRIES = {
+    # Original 20
     "Canada": {"regions": ["Alberta", "British Columbia", "Ontario", "Quebec", "Nova Scotia"], "currency": "CAD"},
     "Costa Rica": {"regions": ["Guanacaste", "Puntarenas", "San Jose", "Limon"], "currency": "CRC"},
     "Norway": {"regions": ["Fjords", "Lofoten", "Tromso", "Bergen", "Oslo"], "currency": "NOK"},
@@ -34,6 +35,32 @@ COUNTRIES = {
     "Colombia": {"regions": ["Cartagena", "Medellin", "Coffee Region", "Tayrona", "Bogota"], "currency": "COP"},
     "Finland": {"regions": ["Lapland", "Helsinki", "Lake District", "Turku"], "currency": "EUR"},
     "Morocco": {"regions": ["Marrakech", "Atlas Mountains", "Essaouira", "Fes", "Sahara"], "currency": "MAD"},
+    # Major tourist countries added
+    "Italy": {"regions": ["Tuscany", "Amalfi Coast", "Dolomites", "Sicily", "Sardinia", "Cinque Terre", "Lake Como"], "currency": "EUR"},
+    "France": {"regions": ["Provence", "French Alps", "Corsica", "Brittany", "Loire Valley", "Pyrenees"], "currency": "EUR"},
+    "Spain": {"regions": ["Andalusia", "Balearic Islands", "Canary Islands", "Catalonia", "Basque Country", "Galicia"], "currency": "EUR"},
+    "Greece": {"regions": ["Santorini", "Crete", "Corfu", "Rhodes", "Peloponnese", "Meteora"], "currency": "EUR"},
+    "Jamaica": {"regions": ["Montego Bay", "Negril", "Port Antonio", "Blue Mountains", "Ocho Rios"], "currency": "JMD"},
+    "Mexico": {"regions": ["Yucatan", "Oaxaca", "Baja California", "Riviera Maya", "Chiapas", "Copper Canyon"], "currency": "MXN"},
+    "Australia": {"regions": ["Great Barrier Reef", "Tasmania", "Blue Mountains", "Daintree", "Kangaroo Island", "Kimberley"], "currency": "AUD"},
+    "USA": {"regions": ["Hawaii", "Pacific Northwest", "Appalachian Trail", "National Parks", "Florida Keys", "Alaska"], "currency": "USD"},
+    "India": {"regions": ["Kerala", "Ladakh", "Rajasthan", "Western Ghats", "Andaman Islands", "Himalayas"], "currency": "INR"},
+    "Tanzania": {"regions": ["Serengeti", "Zanzibar", "Kilimanjaro", "Ngorongoro", "Selous"], "currency": "TZS"},
+    "South Africa": {"regions": ["Cape Town", "Kruger", "Garden Route", "Drakensberg", "Wild Coast"], "currency": "ZAR"},
+    "Indonesia": {"regions": ["Bali", "Komodo", "Raja Ampat", "Borneo", "Lombok", "Flores"], "currency": "IDR"},
+    "Vietnam": {"regions": ["Ha Long Bay", "Sapa", "Hoi An", "Mekong Delta", "Phong Nha"], "currency": "VND"},
+    "Brazil": {"regions": ["Amazon", "Pantanal", "Fernando de Noronha", "Chapada Diamantina", "Lencois Maranhenses"], "currency": "BRL"},
+    "Cuba": {"regions": ["Havana", "Vinales", "Trinidad", "Baracoa", "Cayo Coco"], "currency": "CUP"},
+    "Ireland": {"regions": ["Wild Atlantic Way", "Kerry", "Galway", "Burren", "Connemara"], "currency": "EUR"},
+    "Switzerland": {"regions": ["Swiss Alps", "Interlaken", "Zermatt", "Lucerne", "Engadin"], "currency": "CHF"},
+    "Austria": {"regions": ["Tyrol", "Salzburg", "Wachau Valley", "Hohe Tauern", "Vorarlberg"], "currency": "EUR"},
+    "Turkey": {"regions": ["Cappadocia", "Lycian Way", "Aegean Coast", "Black Sea", "Eastern Anatolia"], "currency": "TRY"},
+    "Philippines": {"regions": ["Palawan", "Siargao", "Bohol", "Cebu", "Batanes"], "currency": "PHP"},
+    "Maldives": {"regions": ["North Male Atoll", "Baa Atoll", "Ari Atoll", "Laamu Atoll"], "currency": "MVR"},
+    "Fiji": {"regions": ["Yasawa Islands", "Taveuni", "Kadavu", "Mamanuca Islands"], "currency": "FJD"},
+    "Costa Rica": {"regions": ["Guanacaste", "Puntarenas", "San Jose", "Limon", "Osa Peninsula", "Monteverde"], "currency": "CRC"},
+    "Nepal": {"regions": ["Everest Region", "Annapurna", "Chitwan", "Pokhara", "Mustang"], "currency": "NPR"},
+    "Madagascar": {"regions": ["Nosy Be", "Andasibe", "Avenue of Baobabs", "Isalo", "Masoala"], "currency": "MGA"},
 }
 
 CATEGORIES = ["beach", "mountain", "city", "forest", "desert", "island", "fjord", "lake", "cultural", "wildlife"]
@@ -243,6 +270,14 @@ def get_continent(country):
         "Sweden": "Europe", "Chile": "South America", "Croatia": "Europe",
         "Thailand": "Asia", "Scotland": "Europe", "Colombia": "South America",
         "Finland": "Europe", "Morocco": "Africa",
+        "Italy": "Europe", "France": "Europe", "Spain": "Europe", "Greece": "Europe",
+        "Jamaica": "Caribbean", "Mexico": "North America", "Australia": "Oceania",
+        "USA": "North America", "India": "Asia", "Tanzania": "Africa",
+        "South Africa": "Africa", "Indonesia": "Asia", "Vietnam": "Asia",
+        "Brazil": "South America", "Cuba": "Caribbean", "Ireland": "Europe",
+        "Switzerland": "Europe", "Austria": "Europe", "Turkey": "Europe",
+        "Philippines": "Asia", "Maldives": "Asia", "Fiji": "Oceania",
+        "Nepal": "Asia", "Madagascar": "Africa",
     }
     return mapping.get(country, "Unknown")
 
@@ -273,6 +308,10 @@ def generate_all_destinations(target_count=750):
 def upload_to_algolia(records):
     """Upload records to Algolia index."""
     client = SearchClientSync(APP_ID, ADMIN_KEY)
+
+    # Clear old records first
+    client.clear_objects(INDEX_NAME)
+    print("  Cleared old records.")
 
     # Upload in batches
     batch_size = 100
@@ -315,7 +354,7 @@ def upload_to_algolia(records):
 
 if __name__ == "__main__":
     print("Generating EcoVoyage dataset...")
-    destinations = generate_all_destinations(750)
+    destinations = generate_all_destinations(1000)
     print(f"  Generated {len(destinations)} destinations across {len(COUNTRIES)} countries")
 
     # Save locally
