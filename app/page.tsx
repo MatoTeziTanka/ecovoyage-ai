@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Component, ReactNode } from 'react'
 import { liteClient as algoliasearch } from 'algoliasearch/lite'
-import { InstantSearch, SearchBox, useHits, useSearchBox, Configure } from 'react-instantsearch'
+import { InstantSearch, SearchBox, useHits, Configure } from 'react-instantsearch'
 
 // --- Algolia Config ---
 const ALGOLIA_APP_ID = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID || 'RM2LBYLLID'
