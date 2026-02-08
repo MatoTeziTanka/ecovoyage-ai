@@ -21,7 +21,7 @@ Every destination includes a sustainability score, carbon footprint rating, and 
 
 ## Demo
 
-**Live Demo:** [YOUR_VERCEL_URL_HERE]
+**Live Demo:** [https://ecovoyage-ai.vercel.app](https://ecovoyage-ai.vercel.app)
 
 **GitHub:** [github.com/MatoTeziTanka/ecovoyage-ai](https://github.com/MatoTeziTanka/ecovoyage-ai)
 
